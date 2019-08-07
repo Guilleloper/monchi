@@ -1,0 +1,25 @@
+{
+  "DEFAULT": {
+    "LOG_FILE": "/var/log/monchi/monchi.log",
+    "LOG_LEVEL": "INFO",
+    "BOT_TOKEN": "¿?",
+    "CLIENT_IDS": ["¿?", "¿?"],
+    "DB_TRANSACTIONS_FILE": "/opt/monchi/data/transactions.csv",
+    "DB_TRANSACTIONS_BACKUP_FILE": "/opt/monchi/data/tmp/transactions.tmp",
+    "DB_STATS_FILE": "/opt/monchi/data/stats.json"
+  },
+  "LEAGUE": {
+    "MANAGERS": [
+      "¿?",
+      "¿?",
+      "¿?",
+      "¿?",
+      "¿?",
+      "¿?",
+      "¿?",
+      "¿?"
+    ],
+    "INITIAL_BUDGET": "100000000",
+    "START_DATE": "¿?/¿?/20¿?"
+  }
+}
