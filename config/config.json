@@ -4,6 +4,7 @@
     "LOG_LEVEL": "INFO",
     "BOT_TOKEN": "¿?",
     "CLIENT_IDS": ["¿?", "¿?"],
+    "DB_MATCHDAYS_FILE": "/opt/monchi/data/matchdays.json",
     "DB_TRANSACTIONS_FILE": "/opt/monchi/data/transactions.csv",
     "DB_TRANSACTIONS_BACKUP_FILE": "/opt/monchi/data/tmp/transactions.tmp",
     "DB_STATS_FILE": "/opt/monchi/data/stats.json"

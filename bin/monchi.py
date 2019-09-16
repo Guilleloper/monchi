@@ -14,6 +14,7 @@ import sys
 import os
 from modules import mod_stats
 from modules import mod_transactions
+from modules import mod_matchdays
 
 
 # FUNCTIONS
@@ -41,6 +42,7 @@ def start(bot, update):
 def help(bot, update):
     if client_authentication(bot, update.message.chat_id):
         bot.send_message(chat_id=update.message.chat_id, text="Opciones disponibles:\n"
+                                                              "  /matchdays\n"
                                                               "  /stats\n"
                                                               "  /transactions")
 
@@ -55,6 +57,29 @@ def unknown(bot, update):
 # Internal errors
 def error(update, error):
     logging.warning('Update "%s" caused error "%s"', update, error)
+
+
+# /mantchdays option
+def matchdays(bot, update):
+    if client_authentication(bot, update.message.chat_id):
+        bot.send_message(chat_id=update.message.chat_id, text="Administrar jornadas:\n"
+                                                              "  /matchdays_edit\n"
+                                                              "  /matchdays_list\n"
+                                                              "  <--  /back")
+
+
+# /matchdays_edit option
+def matchdays_edit(bot, update):
+    if client_authentication(bot, update.message.chat_id):
+        mod_matchdays.edit(bot, update)
+        matchdays(bot, update)
+
+
+# /matchdays_list option
+def matchdays_list(bot, update):
+    if client_authentication(bot, update.message.chat_id):
+        mod_matchdays.show(bot, update)
+        matchdays(bot, update)
 
 
 # /stats option
@@ -162,6 +187,18 @@ def main():
     # Add a Handler to the Dispatcher for the command /help
     help_handler = CommandHandler('help', help)
     dispatcher.add_handler(help_handler)
+
+    # Add a Handler to the Dispatcher for the command /matchdays
+    matchdays_handler = CommandHandler('matchdays', matchdays)
+    dispatcher.add_handler(matchdays_handler)
+
+    # Add a Handler to the Dispatcher for the command /matchdays_edit
+    matchdays_edit_handler = CommandHandler('matchdays_edit', matchdays_edit)
+    dispatcher.add_handler(matchdays_edit_handler)
+
+    # Add a Handler to the Dispatcher for the command /matchdays_list
+    matchdays_list_handler = CommandHandler('matchdays_list', matchdays_list)
+    dispatcher.add_handler(matchdays_list_handler)
 
     # Add a Handler to the Dispatcher for the command /stats
     stats_handler = CommandHandler('stats', stats)
