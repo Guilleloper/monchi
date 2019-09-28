@@ -42,16 +42,20 @@ def update_stats(db_matchdays, db_transactions, db_stats, managers, initial_budg
         # Calculate the budget of each manager: matchdays
         for matchday in matchdays['matchdays']:
             if matchday['manager'] == manager:
-                matchday_points = int(matchday['1']) + int(matchday['2']) + int(matchday['3']) + int(matchday['4'])
-                + int(matchday['5']) + int(matchday['6']) + int(matchday['7']) + int(matchday['8']) + int(matchday['9'])
-                + int(matchday['10']) + int(matchday['11']) + int(matchday['12']) + int(matchday['13'])
-                + int(matchday['14']) + int(matchday['15']) + int(matchday['16']) + int(matchday['17'])
-                + int(matchday['18']) + int(matchday['19']) + int(matchday['20']) + int(matchday['21'])
-                + int(matchday['22']) + int(matchday['23']) + int(matchday['24']) + int(matchday['25'])
-                + int(matchday['26']) + int(matchday['27']) + int(matchday['28']) + int(matchday['29'])
-                + int(matchday['30']) + int(matchday['31']) + int(matchday['32']) + int(matchday['33'])
-                + int(matchday['34']) + int(matchday['35']) + int(matchday['36']) + int(matchday['37'])
-                + int(matchday['38'])
+                matchday_points = \
+                    int(matchday['matchday_1']) + int(matchday['matchday_2']) + int(matchday['matchday_3']) \
+                    + int(matchday['matchday_4']) + int(matchday['matchday_5']) + int(matchday['matchday_6']) \
+                    + int(matchday['matchday_7']) + int(matchday['matchday_8']) + int(matchday['matchday_9']) \
+                    + int(matchday['matchday_10']) + int(matchday['matchday_11']) + int(matchday['matchday_12']) \
+                    + int(matchday['matchday_13']) + int(matchday['matchday_14']) + int(matchday['matchday_15']) \
+                    + int(matchday['matchday_16']) + int(matchday['matchday_17']) + int(matchday['matchday_18']) \
+                    + int(matchday['matchday_19']) + int(matchday['matchday_20']) + int(matchday['matchday_21']) \
+                    + int(matchday['matchday_22']) + int(matchday['matchday_23']) + int(matchday['matchday_24']) \
+                    + int(matchday['matchday_25']) + int(matchday['matchday_26']) + int(matchday['matchday_27']) \
+                    + int(matchday['matchday_28']) + int(matchday['matchday_29']) + int(matchday['matchday_30']) \
+                    + int(matchday['matchday_31']) + int(matchday['matchday_32']) + int(matchday['matchday_33']) \
+                    + int(matchday['matchday_34']) + int(matchday['matchday_35']) + int(matchday['matchday_36']) \
+                    + int(matchday['matchday_37']) + int(matchday['matchday_38'])
                 budget = str(int(budget) + (matchday_points * 100000))
         budget_formated = format(int(budget), ',d')
 

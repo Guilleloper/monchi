@@ -17,7 +17,6 @@ from shutil import copyfile
 
 # Register a matchday
 def edit(bot, update):
-
     # Config file load
     script_path = os.path.dirname(sys.argv[0])
     with open(script_path + '/../config/config.json', 'r') as f1:
@@ -89,6 +88,7 @@ def edit(bot, update):
     # Register the matchday points
     with open(db_matchdays, 'r') as f2:
         matchdays = json.load(f2)
+    matchday_number = "matchday_" + matchday_number
     index = 0
     for matchday in matchdays['matchdays']:
         if matchday['manager'] == matchday_manager:
@@ -108,7 +108,6 @@ def edit(bot, update):
 
 # List the matchdays
 def show(bot, update):
-
     # Config file load
     script_path = os.path.dirname(sys.argv[0])
     with open(script_path + '/../config/config.json', 'r') as f1:
@@ -142,22 +141,28 @@ def show(bot, update):
         points_sorted = {}
         for matchday in matchdays['matchdays']:
             matchday_manager = matchday['manager']
-            matchday_points = int(matchday['1']) + int(matchday['2']) + int(matchday['3']) + int(matchday['4'])
-            + int(matchday['5']) + int(matchday['6']) + int(matchday['7']) + int(matchday['8']) + int(matchday['9'])
-            + int(matchday['20']) + int(matchday['21']) + int(matchday['22']) + int(matchday['23'])
-            + int(matchday['24']) + int(matchday['25']) + int(matchday['26']) + int(matchday['27'])
-            + int(matchday['28']) + int(matchday['29']) + int(matchday['30']) + int(matchday['31'])
-            + int(matchday['32']) + int(matchday['33']) + int(matchday['34']) + int(matchday['35'])
-            + int(matchday['36']) + int(matchday['37']) + int(matchday['38'])
+            matchday_points = int(matchday['matchday_1']) + int(matchday['matchday_2']) + int(matchday['matchday_3']) \
+                + int(matchday['matchday_4']) + int(matchday['matchday_5']) + int(matchday['matchday_6']) \
+                + int(matchday['matchday_7']) + int(matchday['matchday_8']) + int(matchday['matchday_9']) \
+                + int(matchday['matchday_10']) + int(matchday['matchday_11']) + int(matchday['matchday_12']) \
+                + int(matchday['matchday_13']) + int(matchday['matchday_14']) + int(matchday['matchday_15']) \
+                + int(matchday['matchday_16']) + int(matchday['matchday_17']) + int(matchday['matchday_18']) \
+                + int(matchday['matchday_19']) + int(matchday['matchday_20']) + int(matchday['matchday_21']) \
+                + int(matchday['matchday_22']) + int(matchday['matchday_23']) + int(matchday['matchday_24']) \
+                + int(matchday['matchday_25']) + int(matchday['matchday_26']) + int(matchday['matchday_27']) \
+                + int(matchday['matchday_28']) + int(matchday['matchday_29']) + int(matchday['matchday_30']) \
+                + int(matchday['matchday_31']) + int(matchday['matchday_32']) + int(matchday['matchday_33']) \
+                + int(matchday['matchday_34']) + int(matchday['matchday_35']) + int(matchday['matchday_36']) \
+                + int(matchday['matchday_37']) + int(matchday['matchday_38'])
             points_sorted[matchday_manager] = matchday_points
         # Sort the output by the total points
         for key, value in sorted(points_sorted.items(), key=lambda item: item[1], reverse=True):
             bot.send_message(chat_id=update.message.chat_id,
                              text="  Manager: " + key + "\n"
-                                  "  Puntos: " + str(value) + "\n")
+                                                        "  Puntos: " + str(value) + "\n")
         return True
 
-    # Syntax check (integer matchday)
+    # Syntax check (numeric matchday)
     if len(params.split(" ")) == 1:
         try:
             int(params)
@@ -182,13 +187,14 @@ def show(bot, update):
     with open(db_matchdays, 'r') as f3:
         matchdays = json.load(f3)
     points_sorted = {}
+    matchday_number = "matchday_" + params
     for matchday in matchdays['matchdays']:
         matchday_manager = matchday['manager']
-        matchday_points = int(matchday[params])
+        matchday_points = int(matchday[matchday_number])
         points_sorted[matchday_manager] = matchday_points
     # Sort the output by the total points
     for key, value in sorted(points_sorted.items(), key=lambda item: item[1], reverse=True):
         bot.send_message(chat_id=update.message.chat_id,
                          text="  Manager: " + key + "\n"
-                              "  Puntos: " + str(value) + "\n")
+                                                    "  Puntos: " + str(value) + "\n")
     return True
