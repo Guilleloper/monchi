@@ -223,8 +223,8 @@ def show(bot, update):
             return True
 
     # Show the transactions with the selected player
-    elif len(params.split(" ")) == 2 and params.split(" ")[0] == "-p":
-        player = params.split(" ")[1]
+    elif len(params.split(" ")) >= 2 and params.split(" ")[0] == "-p":
+        player = " ".join(params.split(" ")[1:])
         with open(db_transactions, 'r') as f4:
             transactions = list(csv.reader(f4, delimiter=';'))
         first_line = True
