@@ -145,35 +145,19 @@ def show(bot, update):
     if params == "/transactions_list":
         bot.send_message(chat_id=update.message.chat_id,
                          text="Para mostrar las transacciones registradas debe proceder como se indica:\n"
-                              "  /transactions_list all\n"
-                              "  /transactions_list <manager>\n"
-                              "  /transactions_list <days>")
+                              "  /transactions_list -d <days>\n"
+                              "  /transactions_list -m <manager>\n"
+                              "  /transactions_list -p <player>")
         return False
 
-    # Show all the transactions
-    if len(params.split(" ")) == 1 and params == "all":
-        with open(db_transactions, 'r') as f2:
-            transactions = list(csv.reader(f2, delimiter=';'))
-        first_line = True
-        for transaction in transactions:
-            if not first_line:
-                if transaction[2] == "compra":
-                    action = " compra a "
-                if transaction[2] == "venta":
-                    action = " vende a "
-                cost = format(int(transaction[4]), ',d')
-                message = transaction[0] + " - " + transaction[1] + action + transaction[3] + " por " + cost
-                bot.send_message(chat_id=update.message.chat_id,
-                                 text=message)
-            first_line = False
-
-    elif len(params.split(" ")) == 1:
-        # Check the argument: string -> manager, integer -> days
+    # Show the transactions from the selected days before
+    if len(params.split(" ")) == 2 and params.split(" ")[0] == "-d":
+        # Syntax check (numeric days)
         try:
-            days = int(params)
+            days = int(params.split(" ")[1])
             # Show the transactions from the selected days before
-            with open(db_transactions, 'r') as f3:
-                transactions = list(csv.reader(f3, delimiter=';'))
+            with open(db_transactions, 'r') as f2:
+                transactions = list(csv.reader(f2, delimiter=';'))
             first_line = True
             hit = False
             for transaction in transactions:
@@ -188,59 +172,92 @@ def show(bot, update):
                         if transaction[2] == "venta":
                             action = " vende a "
                         cost = format(int(transaction[4]), ',d')
-                        message = transaction[0] + " - " + transaction[1] + action + transaction[3] + " por " + \
-                                  cost
+                        message = transaction[0] + " - " + transaction[1] + action + transaction[3] + " por " + cost
                         bot.send_message(chat_id=update.message.chat_id,
                                          text=message)
                 first_line = False
             if not hit:
                 bot.send_message(chat_id=update.message.chat_id,
                                  text="(ninguna)")
-
+            return True
         except ValueError:
-            # Show the transactions for a manager
-            if params not in managers:
+            bot.send_message(chat_id=update.message.chat_id,
+                             text="Valor de días no válido. Los días han de tener un valor numérico")
+            logging.warning(
+                "Días incorrectos al intentar mostrar las transacciones, "
+                "a petición del cliente ID " + str(update.message.chat_id))
+            return False
+
+    # Show the transactions from the selected manager
+    elif len(params.split(" ")) == 2 and params.split(" ")[0] == "-m":
+        # Check the manager existence
+        manager = params.split(" ")[1]
+        if manager not in managers:
+            bot.send_message(chat_id=update.message.chat_id,
+                             text="No conozco al mánager seleccionado")
+            logging.warning(
+                "Manager incorrecto al intentar mostrar transacciones, a petición del cliente ID " +
+                str(update.message.chat_id))
+            return False
+        else:
+            with open(db_transactions, 'r') as f3:
+                transactions = list(csv.reader(f3, delimiter=';'))
+            first_line = True
+            hit = False
+            for transaction in transactions:
+                if not first_line:
+                    if transaction[1] == manager:
+                        hit = True
+                        if transaction[2] == "compra":
+                            action = " compra a "
+                        if transaction[2] == "venta":
+                            action = " vende a "
+                        cost = format(int(transaction[4]), ',d')
+                        message = transaction[0] + " - " + transaction[1] + action + transaction[3] + " por " + cost
+                        bot.send_message(chat_id=update.message.chat_id,
+                                         text=message)
+                first_line = False
+            if not hit:
                 bot.send_message(chat_id=update.message.chat_id,
-                                 text="No conozco al mánager seleccionado")
-                logging.warning(
-                    "Manager incorrecto al intentar mostrar transacciones, a petición del cliente ID " +
-                    str(update.message.chat_id))
-                return False
-            else:
-                with open(db_transactions, 'r') as f4:
-                    transactions = list(csv.reader(f4, delimiter=';'))
-                first_line = True
-                hit = False
-                for transaction in transactions:
-                    if not first_line:
-                        if transaction[1] == params:
-                            hit = True
-                            if transaction[2] == "compra":
-                                action = " compra a "
-                            if transaction[2] == "venta":
-                                action = " vende a "
-                            cost = format(int(transaction[4]), ',d')
-                            message = transaction[0] + " - " + transaction[1] + action + transaction[3] + " por " +\
-                                cost
-                            bot.send_message(chat_id=update.message.chat_id,
-                                             text=message)
-                    first_line = False
-                if not hit:
+                                 text="(ninguna)")
+            return True
+
+    # Show the transactions with the selected player
+    elif len(params.split(" ")) == 2 and params.split(" ")[0] == "-p":
+        player = params.split(" ")[1]
+        with open(db_transactions, 'r') as f4:
+            transactions = list(csv.reader(f4, delimiter=';'))
+        first_line = True
+        hit = False
+        for transaction in transactions:
+            if not first_line:
+                if transaction[3] == player:
+                    hit = True
+                    if transaction[2] == "compra":
+                        action = " compra a "
+                    if transaction[2] == "venta":
+                        action = " vende a "
+                    cost = format(int(transaction[4]), ',d')
+                    message = transaction[0] + " - " + transaction[1] + action + transaction[3] + " por " + cost
                     bot.send_message(chat_id=update.message.chat_id,
-                                     text="(ninguna)")
+                                     text=message)
+            first_line = False
+        if not hit:
+            bot.send_message(chat_id=update.message.chat_id,
+                             text="(ninguna)")
+        return True
 
     # Bad syntax
     else:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Sintanxis incorrecta. Para mostrar las transacciones registradas debe proceder como se indica:\n"
-                              "  /transactions_list all\n"
-                              "  /transactions_list <manager>\n"
-                              "  /transactions_list <days>")
+                              "  /transactions_list -d <days>\n"
+                              "  /transactions_list -m <manager>\n"
+                              "  /transactions_list -p <player>")
         logging.warning(
             "Sintaxis incorrecta al intentar mostrar las transacciones registradas, a petición del cliente ID " +
             str(update.message.chat_id))
         return False
-    return True
 
 
 # Remove the last registered transaction
