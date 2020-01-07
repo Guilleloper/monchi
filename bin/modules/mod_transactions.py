@@ -165,7 +165,7 @@ def show(bot, update):
                     transaction_timestamp = time.mktime(
                         datetime.datetime.strptime(transaction[0], "%d/%m/%Y").timetuple())
                     current_timestamp = int(datetime.datetime.now().timestamp())
-                    if transaction_timestamp > (current_timestamp - (days * 86400)):
+                    if transaction_timestamp >= (current_timestamp - (days * 86400)):
                         hit = True
                         if transaction[2] == "compra":
                             action = " compra a "
