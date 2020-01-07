@@ -161,6 +161,7 @@ def clause(bot, update):
     script_path = os.path.dirname(sys.argv[0])
     with open(script_path + '/../config/config.json', 'r') as f1:
         config = json.load(f1)
+    db_matchdays = config['DEFAULT']['DB_MATCHDAYS_FILE']
     db_transactions = config['DEFAULT']['DB_TRANSACTIONS_FILE']
     db_stats = config['DEFAULT']['DB_STATS_FILE']
     managers = config['LEAGUE']['MANAGERS']
@@ -178,7 +179,7 @@ def clause(bot, update):
 
     # Show the clause statistics for all managers
     if len(params.split(" ")) == 1 and params == "all":
-        if update_stats(db_transactions, db_stats, managers, initial_budget, start_date):
+        if update_stats(db_matchdays, db_transactions, db_stats, managers, initial_budget, start_date):
             bot.send_message(chat_id=update.message.chat_id, text="Se han recalculado las estadísticas")
             logging.info("Se han recalculado las estadísticas")
         with open(db_stats, 'r') as f2:
@@ -192,7 +193,7 @@ def clause(bot, update):
     # Show the clause statistics for a manager
     elif len(params.split(" ")) == 1:
         if params in managers:
-            if update_stats(db_transactions, db_stats, managers, initial_budget, start_date):
+            if update_stats(db_matchdays, db_transactions, db_stats, managers, initial_budget, start_date):
                 bot.send_message(chat_id=update.message.chat_id, text="Se han recalculado las estadísticas")
                 logging.info("Se han recalculado las estadísticas")
             with open(db_stats, 'r') as f3:
