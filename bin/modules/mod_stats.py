@@ -29,16 +29,25 @@ def update_stats(db_matchdays, db_transactions, db_stats, managers, initial_budg
     for manager in managers:
         budget = initial_budget
         last_purchase_date = start_date
+        transactions_number = 0
+        transactions_spec = 0
+
         # Calculate the budget of each manager: transactions
         for transaction in transactions:
             if transaction[1] == manager:
                 if transaction[2] == "compra":
                     budget = str(int(budget) - int(transaction[4]))
                     last_purchase_date = transaction[0]
+                    transactions_number += 1
+                    transactions_spec = str(int(transactions_spec) + int(transaction[4]))
                 elif transaction[2] == "venta":
                     budget = str(int(budget) + int(transaction[4]))
+                    transactions_number += 1
+                    transactions_spec = str(int(transactions_spec) - int(transaction[4]))
                 else:
                     logging.warning("Detectada transacción incorrecta al actualizar las cuentas")
+        transactions_number = str(transactions_number)
+
         # Calculate the budget of each manager: matchdays
         for matchday in matchdays['matchdays']:
             if matchday['manager'] == manager:
@@ -57,7 +66,9 @@ def update_stats(db_matchdays, db_transactions, db_stats, managers, initial_budg
                     + int(matchday['matchday_34']) + int(matchday['matchday_35']) + int(matchday['matchday_36']) \
                     + int(matchday['matchday_37']) + int(matchday['matchday_38'])
                 budget = str(int(budget) + (matchday_points * 100000))
-        budget_formated = format(int(budget), ',d')
+                transactions_spec = str(int(transactions_spec) - (matchday_points * 100000))
+        budget = format(int(budget), ',d')
+        transactions_spec = format(int(transactions_spec), ',d')
 
         # Calculate the days to buy by paying the entire clause
         last_purchase_timestamp = int(
@@ -66,12 +77,15 @@ def update_stats(db_matchdays, db_transactions, db_stats, managers, initial_budg
         current_timestamp = int(datetime.datetime.now().timestamp())
         last_purchase_days = int((float(current_timestamp - last_purchase_timestamp)) / 86400)
         days_to_clause = str(14 - last_purchase_days)
+
         # Register the stats
         stats_new['stats'].append({
             'manager': manager,
-            'budget': budget_formated,
+            'budget': budget,
             'last_purchase': last_purchase_date,
-            'days_to_clause': days_to_clause
+            'days_to_clause': days_to_clause,
+            'transactions_number': transactions_number,
+            'transactions_spec': transactions_spec
         })
 
     # Check for changes in the stats file
@@ -115,10 +129,17 @@ def budget(bot, update):
             logging.info("Se han recalculado las estadísticas")
         with open(db_stats, 'r') as f2:
             stats = json.load(f2)
+        # Sort the output by the budget
+        budget_sorted = {}
         for stat in stats['stats']:
+            stat_manager = stat['manager']
+            stat_budget = stat['budget']
+            budget_sorted[stat_manager] = stat_budget.replace(",", "")
+        for key, value in sorted(budget_sorted.items(), key=lambda item: int(item[1]), reverse=True):
+            value = format(int(value), ',d')
             bot.send_message(chat_id=update.message.chat_id,
-                             text="  Manager: " + stat['manager'] + "\n"
-                                  "  Presupuesto: " + stat['budget'] + "\n")
+                             text="  Manager: " + key + "\n"
+                                  "  Presupuesto: " + value + "\n")
 
     # Show the account statistics for a manager
     elif len(params.split(" ")) == 1:
@@ -144,7 +165,8 @@ def budget(bot, update):
     # Bad syntax
     else:
         bot.send_message(chat_id=update.message.chat_id,
-                         text="Sintanxis incorrecta. Para mostrar las estadisticas presupuestarias debe proceder como se indica:\n"
+                         text="Sintanxis incorrecta. Para mostrar las estadisticas presupuestarias"
+                              " debe proceder como se indica:\n"
                               "  /stats_budget all\n"
                               "  /stats_budget <manager>")
         logging.warning(
@@ -215,11 +237,87 @@ def clause(bot, update):
     # Bad syntax
     else:
         bot.send_message(chat_id=update.message.chat_id,
-                         text="Sintanxis incorrecta. Para mostrar las estadisticas presupuestarias debe proceder como se indica:\n"
+                         text="Sintanxis incorrecta. Para mostrar las estadisticas presupuestarias"
+                              " debe proceder como se indica:\n"
                               "  /stats_budget all\n"
                               "  /stats_budget <manager>")
         logging.warning(
             "Sintaxis incorrecta al intentar mostrar las estadisticas presupuestarias, a petición del cliente ID " +
             str(update.message.chat_id))
+        return False
+    return True
+
+
+# Show the manager transaction statistics
+def transaction(bot, update):
+
+    # Config file load
+    script_path = os.path.dirname(sys.argv[0])
+    with open(script_path + '/../config/config.json', 'r') as f1:
+        config = json.load(f1)
+    db_matchdays = config['DEFAULT']['DB_MATCHDAYS_FILE']
+    db_transactions = config['DEFAULT']['DB_TRANSACTIONS_FILE']
+    db_stats = config['DEFAULT']['DB_STATS_FILE']
+    managers = config['LEAGUE']['MANAGERS']
+    initial_budget = config['LEAGUE']['INITIAL_BUDGET']
+    start_date = config['LEAGUE']['START_DATE']
+
+    # Syntax checks
+    params = update.message.text.replace("/stats_transaction ", "")
+    if params == "/stats_transaction":
+        bot.send_message(chat_id=update.message.chat_id,
+                        text="Para mostrar las estadísticas de las transacciones debe proceder como se indica:\n"
+                              "  /stats_transaction number\n"
+                              "  /stats_transaction spec")
+        return False
+
+    # Show the top managers by number of transactions
+    if len(params.split(" ")) == 1 and params == "number":
+        if update_stats(db_matchdays, db_transactions, db_stats, managers, initial_budget, start_date):
+            bot.send_message(chat_id=update.message.chat_id, text="Se han recalculado las estadísticas")
+            logging.info("Se han recalculado las estadísticas")
+        with open(db_stats, 'r') as f2:
+            stats = json.load(f2)
+        # Sort the output by the number of transactions
+        transaction_sorted = {}
+        for stat in stats['stats']:
+            stat_manager = stat['manager']
+            stat_transaction = stat['transactions_number']
+            transaction_sorted[stat_manager] = stat_transaction.replace(",", "")
+        for key, value in sorted(transaction_sorted.items(), key=lambda item: int(item[1]), reverse=True):
+            value = format(int(value), ',d')
+            bot.send_message(chat_id=update.message.chat_id,
+                             text="  Manager: " + key + "\n"
+                                  "  Nº de transacciones: " + value + "\n")
+
+    # Show the top managers by transactions speculation
+    elif len(params.split(" ")) == 1 and params == "spec":
+        if update_stats(db_matchdays, db_transactions, db_stats, managers, initial_budget, start_date):
+            bot.send_message(chat_id=update.message.chat_id, text="Se han recalculado las estadísticas")
+            logging.info("Se han recalculado las estadísticas")
+        with open(db_stats, 'r') as f2:
+            stats = json.load(f2)
+        # Sort the output by the transaction speculation
+        transaction_sorted = {}
+        for stat in stats['stats']:
+            stat_manager = stat['manager']
+            stat_transaction = stat['transactions_spec']
+            transaction_sorted[stat_manager] = stat_transaction.replace(",", "")
+        for key, value in sorted(transaction_sorted.items(), key=lambda item: int(item[1]), reverse=True):
+            value = format(int(value), ',d')
+            bot.send_message(chat_id=update.message.chat_id,
+                             text="  Manager: " + key + "\n"
+                                  "  Balance: " + value + "\n")
+
+    # Bad syntax
+    else:
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Sintanxis incorrecta. Para mostrar las estadísticas de las transacciones"
+                              " debe proceder como se indica:\n"
+                              "  /stats_transaction number\n"
+                              "  /stats_transaction spec")
+        logging.warning(
+            "Sintaxis incorrecta al intentar mostrar las estadisticas de las transacciones,"
+            " a petición del cliente ID " + str(update.message.chat_id))
         return False
     return True

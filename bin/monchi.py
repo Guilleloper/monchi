@@ -88,6 +88,7 @@ def stats(bot, update):
         bot.send_message(chat_id=update.message.chat_id, text="Mostrar estadisticas:\n"
                                                               "  /stats_budget\n"
                                                               "  /stats_clause\n"
+                                                              "  /stats_transaction\n"
                                                               "  <--  /back")
 
 
@@ -102,6 +103,13 @@ def stats_budget(bot, update):
 def stats_clause(bot, update):
     if client_authentication(bot, update.message.chat_id):
         mod_stats.clause(bot, update)
+        stats(bot, update)
+
+
+# /stats_transaction option
+def stats_transaction(bot, update):
+    if client_authentication(bot, update.message.chat_id):
+        mod_stats.transaction(bot, update)
         stats(bot, update)
 
 
@@ -211,6 +219,10 @@ def main():
     # Add a Handler to the Dispatcher for the command /stats_clause
     stats_clause_handler = CommandHandler('stats_clause', stats_clause)
     dispatcher.add_handler(stats_clause_handler)
+
+    # Add a Handler to the Dispatcher for the command /stats_transaction
+    stats_transaction_handler = CommandHandler('stats_transaction', stats_transaction)
+    dispatcher.add_handler(stats_transaction_handler)
 
     # Add a Handler to the Dispatcher for the command /transactions
     transactions_handler = CommandHandler('transactions', transactions)
