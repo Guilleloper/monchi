@@ -231,7 +231,7 @@ def show(bot, update):
         hit = False
         for transaction in transactions:
             if not first_line:
-                if transaction[3] == player:
+                if transaction[3].lower().find(player.lower()) == 0:
                     hit = True
                     if transaction[2] == "compra":
                         action = " compra a "
